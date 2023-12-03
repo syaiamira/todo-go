@@ -61,7 +61,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -75,8 +75,6 @@ paths:
       - Todo
   /todo/complete/{id}:
     patch:
-      consumes:
-      - application/json
       description: Update a todo item status to complete by ID
       parameters:
       - description: Todo ID

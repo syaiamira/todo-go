@@ -81,9 +81,6 @@ const docTemplate = `{
         "/todo/complete/{id}": {
             "patch": {
                 "description": "Update a todo item status to complete by ID",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -123,7 +120,7 @@ const docTemplate = `{
                 "summary": "Delete todo item by ID",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Todo ID",
                         "name": "id",
                         "in": "path",

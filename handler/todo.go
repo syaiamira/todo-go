@@ -30,7 +30,11 @@ func AddTodo(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err})
 	}
 
-	err = db.Create(&body).Error
+	todo := model.Todo{
+		Title: body.Title,
+	}
+
+	err = db.Create(&todo).Error
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Unable to add a new todo item"})
 	}
@@ -54,7 +58,6 @@ func GetAllTodo(ctx *fiber.Ctx) error {
 // @Summary Update a todo item status to complete
 // @Description Update a todo item status to complete by ID
 // @Tags Todo
-// @Accept json
 // @Produce json
 // @Param id path int true "Todo ID"
 // @Success 200 {object} map[string]interface{}
@@ -79,7 +82,7 @@ func UpdateTodoStatus(ctx *fiber.Ctx) error {
 // @Description Delete a todo item by ID
 // @Tags Todo
 // @Produce json
-// @Param id path string true "Todo ID"
+// @Param id path int true "Todo ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /todo/{id} [delete]
 func DeleteTodo(ctx *fiber.Ctx) error {
