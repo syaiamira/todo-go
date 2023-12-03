@@ -1,0 +1,14 @@
+version: '3'
+services:
+  web:
+    container_name: todo-go
+    image: syaiamira/todo-go:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+  sqlite3:
+    image: nouchka/sqlite3:latest
+    volumes:
+      - ./data:/data
