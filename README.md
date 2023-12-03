@@ -12,6 +12,15 @@ To run the application, follow these steps:
    ```bash
    docker-compose up
 
+5. Alternatively, pull the image from Docker Hub:
+
+    Run:
+    ```
+    docker pull syaiamira/todo-go
+    docker run -p 8000:8000 syaiamira/todo-go
+
+    ```
+
 ## Test
 
 ### Add a new todo
