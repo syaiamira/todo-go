@@ -11,4 +11,5 @@ type Todo struct {
 
 	Title       string `json:"title"`
 	IsCompleted bool   `json:"is_completed" gorm:"default:false"`
+	UserID      uint   `json:"user_id"`
 }

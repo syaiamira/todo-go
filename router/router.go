@@ -2,6 +2,7 @@ package router
 
 import (
 	"todo-cognixus/handler"
+	"todo-cognixus/middleware"
 
 	swagger "github.com/arsmn/fiber-swagger/v2"
 	"github.com/gofiber/fiber/v2"
@@ -10,12 +11,19 @@ import (
 func SetupRoutes(app *fiber.App) {
 	SetupSwagger(app)
 
+	// Auth group routers
+	auth := app.Group("auth")
+
+	auth.Get("/:provider", handler.Login)
+	auth.Get("/:provider/callback", handler.LoginCallback)
+
+	// Todo group routers
 	todo := app.Group("todo")
 
-	todo.Post("/", handler.AddTodo)
-	todo.Get("/", handler.GetAllTodo)
-	todo.Patch("/complete/:id", handler.UpdateTodoStatus)
-	todo.Delete("/:id", handler.DeleteTodo)
+	todo.Post("/", middleware.ValidateToken(), handler.AddTodo)
+	todo.Get("/", middleware.ValidateToken(), handler.GetAllTodoByUserID)
+	todo.Patch("/complete/:todo_id", middleware.ValidateToken(), handler.UpdateTodoStatus)
+	todo.Delete("/:todo_id", middleware.ValidateToken(), handler.DeleteTodo)
 }
 
 func SetupSwagger(app *fiber.App) {

@@ -19,7 +19,7 @@ info:
 paths:
   /todo/:
     get:
-      description: Get all todo items
+      description: Get all todo items by user id from login
       produces:
       - application/json
       responses:
@@ -28,7 +28,9 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Get all todo items
+      security:
+      - BearerAuth: []
+      summary: Get all todo items by user id
       tags:
       - Todo
     post:
@@ -50,6 +52,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Create new todo item
       tags:
       - Todo
@@ -70,6 +74,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Delete todo item by ID
       tags:
       - Todo
@@ -90,6 +96,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Update a todo item status to complete
       tags:
       - Todo

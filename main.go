@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"todo-cognixus/config"
 	"todo-cognixus/database"
 	_ "todo-cognixus/docs"
 	"todo-cognixus/router"
@@ -28,15 +29,21 @@ func main() {
 
 	app := fiber.New()
 
+	// To allow cors
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
+	config.LoadEnv()
+
+	// Connect to database
 	database.ConnectSQLite()
+
+	// Setup routers
 	router.SetupRoutes(app)
 
-	err := app.Listen(":8000")
+	err := app.Listen("localhost:" + config.PORT)
 	if err != nil {
 		log.Fatal(err)
 	}

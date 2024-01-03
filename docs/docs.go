@@ -26,14 +26,19 @@ const docTemplate = `{
     "paths": {
         "/todo/": {
             "get": {
-                "description": "Get all todo items",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all todo items by user id from login",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Todo"
                 ],
-                "summary": "Get all todo items",
+                "summary": "Get all todo items by user id",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -45,6 +50,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Add a new todo item",
                 "consumes": [
                     "application/json"
@@ -80,6 +90,11 @@ const docTemplate = `{
         },
         "/todo/complete/{id}": {
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update a todo item status to complete by ID",
                 "produces": [
                     "application/json"
@@ -110,6 +125,11 @@ const docTemplate = `{
         },
         "/todo/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete a todo item by ID",
                 "produces": [
                     "application/json"
