@@ -71,7 +71,7 @@ func Login(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid provider"})
 	}
 
-	oauthConfig.RedirectURL = fmt.Sprintf("http://localhost:8000/auth/%s/callback", provider)
+	oauthConfig.RedirectURL = fmt.Sprintf("http://localhost:%s/auth/%s/callback", config.PORT, provider)
 
 	// Redirect to the OAuth provider's login page
 	url := oauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
