@@ -43,7 +43,7 @@ func main() {
 	// Setup routers
 	router.SetupRoutes(app)
 
-	err := app.Listen("localhost:" + config.PORT)
+	err := app.Listen(":" + config.PORT)
 	if err != nil {
 		log.Fatal(err)
 	}

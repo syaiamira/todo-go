@@ -29,6 +29,15 @@ const (
 	FACEBOOK Provider = "facebook"
 )
 
+// @Summary Login
+// @Description Social media login
+// @Description Provider options: google, facebook, github
+// @Description Use this API on browser
+// @Tags Auth
+// @Produce json
+// @Param provider path string true "Provider"
+// @Success 200 {object} map[string]interface{} "Successful login"
+// @Router /auth/{provider} [get]
 func Login(ctx *fiber.Ctx) error {
 	provider := ctx.Params("provider")
 

@@ -17,6 +17,29 @@ info:
   title: Todo
   version: "1.0"
 paths:
+  /auth/{provider}:
+    get:
+      description: |-
+        Social media login
+        Provider options: google, facebook, github
+        Use this API on browser
+      parameters:
+      - description: Provider
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful login
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login
+      tags:
+      - Auth
   /todo/:
     get:
       description: Get all todo items by user id from login
