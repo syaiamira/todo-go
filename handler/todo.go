@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"todo-cognixus/database"
 	_ "todo-cognixus/docs"
 	"todo-cognixus/model"
@@ -73,16 +74,14 @@ func GetAllTodoByUserID(ctx *fiber.Ctx) error {
 // @Router /todo/complete/{id} [patch]
 // @Security BearerAuth
 func UpdateTodoStatus(ctx *fiber.Ctx) error {
-	userID := uint(ctx.Locals("user_id").(float64))
-
-	todoID, err := ctx.ParamsInt("todo_id")
+	userID, todoID, err := getUserIDAndTodoID(ctx)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
 	}
 
 	result := database.DB.
 		Model(&model.Todo{}).
-		Where("id = ? AND user_id = ?", todoID, userID).
+		Where(getWhereQuery, todoID, userID).
 		Update("IsCompleted", true)
 
 	if result.Error != nil || result.RowsAffected == 0 {
@@ -101,15 +100,13 @@ func UpdateTodoStatus(ctx *fiber.Ctx) error {
 // @Router /todo/{id} [delete]
 // @Security BearerAuth
 func DeleteTodo(ctx *fiber.Ctx) error {
-	userID := uint(ctx.Locals("user_id").(float64))
-
-	todoID, err := ctx.ParamsInt("todo_id")
+	userID, todoID, err := getUserIDAndTodoID(ctx)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
 	}
 
 	result := database.DB.
-		Where("id = ? AND user_id = ?", todoID, userID).
+		Where(getWhereQuery(), todoID, userID).
 		Delete(&model.Todo{}, todoID)
 
 	if result.Error != nil || result.RowsAffected == 0 {
@@ -117,4 +114,15 @@ func DeleteTodo(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"success": "Successfully deleted a todo item"})
+}
+
+func getUserIDAndTodoID(ctx *fiber.Ctx) (userID uint, todoID int, err error) {
+	userID = uint(ctx.Locals("user_id").(float64))
+	todoID, err = ctx.ParamsInt("todo_id")
+
+	return userID, todoID, err
+}
+
+func getWhereQuery() string {
+	return fmt.Sprint("id = ? AND user_id = ?")
 }

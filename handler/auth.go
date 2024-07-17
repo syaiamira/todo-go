@@ -91,8 +91,6 @@ func LoginCallback(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "Unable to extract token from Code-Exchange"})
 	}
 
-	var resp *http.Response
-
 	user := model.User{
 		Provider: provider,
 	}
@@ -100,13 +98,17 @@ func LoginCallback(ctx *fiber.Ctx) error {
 	// Get id, name and email from provider API
 	switch Provider(provider) {
 	case GOOGLE:
-		resp, err = http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + tokenOauth.AccessToken)
+		err = getUserInfoFromProvider(
+			"https://www.googleapis.com/oauth2/v2/userinfo?access_token="+tokenOauth.AccessToken,
+			&user)
 
 	case FACEBOOK:
-		resp, err = http.Get("https://graph.facebook.com/v15.0/me?fields=id,name,email&access_token=" + tokenOauth.AccessToken)
+		err = getUserInfoFromProvider(
+			"https://graph.facebook.com/v15.0/me?fields=id,name,email&access_token="+tokenOauth.AccessToken,
+			&user)
 
 	case GITHUB:
-		err = GetGithubUserInfo(tokenOauth, &user)
+		err = getGithubUserInfo(tokenOauth, &user)
 
 	default:
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid provider"})
@@ -114,21 +116,6 @@ func LoginCallback(ctx *fiber.Ctx) error {
 
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "Unable to fetch user data"})
-	}
-
-	// If user.UID is an empty string, unmarshal the response body in a single json
-	if len(user.UID) == 0 {
-		// Unmarshal body for Google and Facebook response in a json array
-		var userDataJson map[string]interface{}
-
-		err = UnmarshalJSONResponse(resp.Body, &userDataJson)
-		if err != nil {
-			return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": err.Error()})
-		}
-
-		user.UID = userDataJson["id"].(string)
-		user.Name = userDataJson["name"].(string)
-		user.Email = userDataJson["email"].(string)
 	}
 
 	// If the user didn't exist, create the user
@@ -164,25 +151,45 @@ func LoginCallback(ctx *fiber.Ctx) error {
 	})
 }
 
-func GetGithubUserInfo(tokenOauth *oauth2.Token, user *model.User) error {
+func getUserInfoFromProvider(providerUrl string, user *model.User) error {
+	var resp *http.Response
+
+	resp, err := http.Get(providerUrl)
+
+	// Unmarshal body for Google and Facebook response in a json array
+	var userDataJson map[string]interface{}
+
+	err = unmarshalJSONResponse(resp.Body, &userDataJson)
+	if err != nil {
+		return err
+	}
+
+	user.UID = userDataJson["id"].(string)
+	user.Name = userDataJson["name"].(string)
+	user.Email = userDataJson["email"].(string)
+
+	return nil
+}
+
+func getGithubUserInfo(tokenOauth *oauth2.Token, user *model.User) error {
 	githubUserAPI := "https://api.github.com/user"
 
 	// Get basic info from github API
-	respInfo, err := GetGithubUserRequest(githubUserAPI, tokenOauth.AccessToken)
+	respInfo, err := getGithubUserRequest(githubUserAPI, tokenOauth.AccessToken)
 
 	// Unmarshal basic info response
 	var userGithubJson map[string]interface{}
-	err = UnmarshalJSONResponse(respInfo.Body, &userGithubJson)
+	err = unmarshalJSONResponse(respInfo.Body, &userGithubJson)
 	if err != nil {
 		return err
 	}
 
 	// Get email from github API
-	respEmail, err := GetGithubUserRequest(githubUserAPI+"/emails", tokenOauth.AccessToken)
+	respEmail, err := getGithubUserRequest(githubUserAPI+"/emails", tokenOauth.AccessToken)
 
 	// Unmarshal email response in a json array
 	var emailGithubJson []map[string]interface{}
-	err = UnmarshalJSONResponse(respEmail.Body, &emailGithubJson)
+	err = unmarshalJSONResponse(respEmail.Body, &emailGithubJson)
 	if err != nil {
 		return err
 	}
@@ -195,7 +202,7 @@ func GetGithubUserInfo(tokenOauth *oauth2.Token, user *model.User) error {
 	return nil
 }
 
-func GetGithubUserRequest(githubGetAPI string, accessToken string) (*http.Response, error) {
+func getGithubUserRequest(githubGetAPI string, accessToken string) (*http.Response, error) {
 	var resp *http.Response
 
 	req, err := http.NewRequest(http.MethodGet, githubGetAPI, nil)
@@ -209,7 +216,7 @@ func GetGithubUserRequest(githubGetAPI string, accessToken string) (*http.Respon
 	return resp, err
 }
 
-func UnmarshalJSONResponse(body io.ReadCloser, dataJson interface{}) error {
+func unmarshalJSONResponse(body io.ReadCloser, dataJson interface{}) error {
 	dataBytes, err := io.ReadAll(body)
 	if err != nil {
 		return err
